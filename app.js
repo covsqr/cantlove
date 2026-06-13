@@ -133,6 +133,7 @@ const screens = document.querySelectorAll(".screen");
 const replyInput = $("#replyInput");
 const replyForm = $("#replyForm");
 const typingMeta = $("#typingMeta");
+const chatLog = $("#chatLog");
 
 function setScreen(name) {
   screens.forEach((screen) => {
@@ -155,11 +156,12 @@ function renderScenario() {
   $("#scenarioCategory").textContent = scenario.category;
   $("#scenarioTitle").textContent = scenario.title;
   $("#scenarioDescription").textContent = scenario.description;
-  $("#chatName").textContent = scenario.name;
+  $("#chatName").textContent = "카카오톡";
   replyInput.value = "";
   replyInput.placeholder = scenario.placeholder;
-  typingMeta.textContent = "입력 대기 중";
-  state.startedAt = performance.now();
+  typingMeta.textContent = "채팅방을 열면 측정이 시작됩니다.";
+  replyForm.classList.add("is-hidden");
+  state.startedAt = 0;
   state.firstTypedAt = 0;
   state.editCount = 0;
   state.isDeletingGroup = false;
@@ -173,7 +175,7 @@ function renderScenario() {
         <span>KakaoTalk</span>
         <span>${formatKakaoTime(latest[1])}</span>
       </div>
-      <div class="chat-preview">
+      <button class="chat-preview" type="button" data-open-chat>
         <div class="preview-avatar" aria-hidden="true">
           <span>${escapeHtml(scenario.name.slice(0, 1))}</span>
         </div>
@@ -185,11 +187,10 @@ function renderScenario() {
           <p>${escapeHtml(previewText)}</p>
         </div>
         <span class="unread-badge">${scenario.messages.length}</span>
-      </div>
+      </button>
     </div>
+    <p class="open-hint">미리보기를 눌러 채팅방을 여세요.</p>
   `;
-
-  requestAnimationFrame(() => replyInput.focus());
 }
 
 function updateTypingMeta() {
@@ -199,6 +200,8 @@ function updateTypingMeta() {
 }
 
 function handleInput() {
+  if (!state.startedAt) return;
+
   if (!state.firstTypedAt && replyInput.value.length > 0) {
     state.firstTypedAt = performance.now();
   }
@@ -217,8 +220,36 @@ function handleInput() {
   updateTypingMeta();
 }
 
+function openChatRoom() {
+  const scenario = scenarios[state.step];
+  $("#chatName").textContent = scenario.name;
+  replyForm.classList.remove("is-hidden");
+  replyInput.value = "";
+  state.startedAt = performance.now();
+  state.firstTypedAt = 0;
+  state.editCount = 0;
+  state.isDeletingGroup = false;
+  state.previousLength = 0;
+  typingMeta.textContent = "입력 대기 중";
+
+  chatLog.innerHTML = scenario.messages
+    .map(
+      ([text, time]) => `
+        <div class="message-row">
+          <div class="bubble">${escapeHtml(text)}</div>
+          <span class="time">${formatKakaoTime(time)}</span>
+        </div>
+      `
+    )
+    .join("");
+
+  requestAnimationFrame(() => replyInput.focus());
+}
+
 async function submitAnswer(event) {
   event.preventDefault();
+  if (!state.startedAt) return;
+
   const text = replyInput.value.trim();
 
   if (text.length < 2) {
@@ -559,6 +590,11 @@ $("#retryBtn").addEventListener("click", startTest);
 $("#shareBtn").addEventListener("click", copyShareLink);
 replyInput.addEventListener("input", handleInput);
 replyForm.addEventListener("submit", submitAnswer);
+chatLog.addEventListener("click", (event) => {
+  if (event.target.closest("[data-open-chat]")) {
+    openChatRoom();
+  }
+});
 window.addEventListener("hashchange", loadSharedResult);
 
 if (!loadSharedResult()) {
