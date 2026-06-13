@@ -500,13 +500,13 @@ function buildWeaknesses(scores, metrics, totals) {
   const items = [];
 
   if (scores.empathy < 58) {
-    items.push("첫 문장에 상대 기분이 없어서, 상대 입장에선 '내가 예민한 사람인가?'만 남습니다.");
+    items.push("상대 반응을 아예 계산에 넣지 않는 순간이 있습니다. 맞춰주라는 뜻이 아니라, 상대가 왜 저 말을 했는지 읽는 힘이 약합니다.");
   }
   if (scores.clarity < 58) {
-    items.push("상황 설명이 흐릿합니다. 이렇게 보내면 상대는 답장보다 의심할 거리를 더 많이 받습니다.");
+    items.push("내 입장이 충분히 설명되지 않습니다. 배려만 하거나 농담만 하면, 결국 상대가 빈칸을 추측하게 됩니다.");
   }
   if (scores.warmth < 58) {
-    items.push("호감 표현이 약합니다. 무난한데, 설레지는 않습니다.");
+    items.push("호감 표현이 약합니다. 무난하게 방어는 했지만, 관계가 앞으로 갈 만한 온도는 적습니다.");
   }
   if (scores.pace < 58) {
     items.push("답장을 너무 오래 만집니다. 신중함보다 눈치 보는 느낌이 먼저 납니다.");
@@ -535,10 +535,10 @@ function buildTips(scores, metrics) {
   const tips = [];
 
   if (scores.empathy < 60) {
-    tips.push("첫 문장은 내 입장보다 상대 감정을 먼저 받아주세요. 그래야 뒤의 설명도 변명처럼 안 들립니다.");
+    tips.push("상대 감정을 무조건 받아주지 말고, 상대가 문제 삼는 지점을 먼저 짚으세요. 그 다음 내 입장을 말해야 을처럼 보이지 않습니다.");
   }
   if (scores.clarity < 60) {
-    tips.push("상황 설명은 짧아도 구체적으로 하세요. 애매하면 상대가 빈칸을 의심으로 채웁니다.");
+    tips.push("내가 어디까지 괜찮고 어디부터 불편한지도 말하세요. 착하게만 답하면 좋은 사람이 아니라 애매한 사람이 됩니다.");
   }
   if (metrics.questionRatio < 0.35) {
     tips.push("답장 끝에는 상대가 바로 이어 말할 수 있는 질문을 하나 남기세요.");
@@ -645,7 +645,7 @@ function buildDirectCallout(result) {
     return "지금 필요한 건 장문 해명이 아니라, 사과 한 줄과 다음 행동입니다.";
   }
   if ((scores.empathy || 0) < 50) {
-    return "상대 기분을 안 받고 내 입장부터 말해서 대화가 바로 식습니다.";
+    return "상대 말의 핵심을 안 읽고 내 말만 해서 대화가 바로 엇나갑니다.";
   }
   if ((scores.clarity || 0) < 50) {
     return "말이 애매해서 상대가 안심하는 대신 더 추측하게 됩니다.";
