@@ -168,7 +168,7 @@ function renderScenario() {
   state.previousLength = 0;
 
   const latest = scenario.messages[scenario.messages.length - 1];
-  const previewText = scenario.messages.map(([text]) => text).join("\n");
+  const previewText = latest[0];
   $("#chatLog").innerHTML = `
     <div class="kakao-shot">
       <div class="shot-status">
@@ -258,11 +258,18 @@ async function submitAnswer(event) {
     return;
   }
 
+  if (isHardBlockedAnswer(text)) {
+    typingMeta.textContent = "이건 답장이 아니라 회피입니다. 진짜 보낼 말을 써주세요.";
+    replyInput.focus();
+    return;
+  }
+
   const submittedAt = performance.now();
   state.answers.push({
     scenarioId: scenarios[state.step].id,
     title: scenarios[state.step].title,
     text,
+    isOffTopic: isOffTopicAnswer(text, scenarios[state.step]),
     timeToFirstType: state.firstTypedAt
       ? Math.round((state.firstTypedAt - state.startedAt) / 1000)
       : 0,
@@ -325,6 +332,7 @@ function analyzeAnswers(answers) {
       acc.warm += features.hasWarmth ? 1 : 0;
       acc.defensive += features.hasDefense ? 1 : 0;
       acc.vague += features.hasVague ? 1 : 0;
+      acc.offTopic += answer.isOffTopic ? 1 : 0;
       return acc;
     },
     {
@@ -337,7 +345,8 @@ function analyzeAnswers(answers) {
       clear: 0,
       warm: 0,
       defensive: 0,
-      vague: 0
+      vague: 0,
+      offTopic: 0
     }
   );
 
@@ -348,13 +357,14 @@ function analyzeAnswers(answers) {
     averageEdits: totals.edits / count,
     questionRatio: totals.questions / count,
     defensiveRatio: totals.defensive / count,
-    vagueRatio: totals.vague / count
+    vagueRatio: totals.vague / count,
+    offTopicRatio: totals.offTopic / count
   };
 
   const scores = {
-    empathy: clamp(42 + totals.empathy * 10 + totals.apologies * 5 - totals.defensive * 10),
-    clarity: clamp(44 + totals.clear * 11 - totals.vague * 9 - (metrics.averageLength > 120 ? 8 : 0)),
-    warmth: clamp(40 + totals.warm * 11 + totals.questions * 4 - totals.defensive * 6),
+    empathy: clamp(42 + totals.empathy * 10 + totals.apologies * 5 - totals.defensive * 10 - totals.offTopic * 8),
+    clarity: clamp(44 + totals.clear * 11 - totals.vague * 9 - totals.offTopic * 12 - (metrics.averageLength > 120 ? 8 : 0)),
+    warmth: clamp(40 + totals.warm * 11 + totals.questions * 4 - totals.defensive * 6 - totals.offTopic * 8),
     pace: clamp(76 - Math.max(0, metrics.averageTime - 35) * 0.45 - metrics.averageEdits * 4)
   };
   const overall = Math.round(
@@ -391,6 +401,55 @@ function getTextFeatures(text) {
   };
 }
 
+function isHardBlockedAnswer(text) {
+  const normalized = normalize(text);
+  const compact = normalized.replace(/\s+/g, "");
+  const hangulCount = (normalized.match(/[가-힣]/g) || []).length;
+  const letterCount = (normalized.match(/[a-zA-Z가-힣]/g) || []).length;
+
+  if (letterCount > 0 && hangulCount / letterCount < 0.25) return true;
+  if (/^(.)\1{5,}$/.test(compact)) return true;
+  if (/^(.{1,6})\1{3,}$/.test(compact)) return true;
+  if (/(.)\1{8,}/.test(compact)) return true;
+
+  return false;
+}
+
+function isOffTopicAnswer(text, scenario) {
+  const normalized = normalize(text);
+  const features = getTextFeatures(normalized);
+  const scenarioText = `${scenario.description} ${scenario.messages.map(([message]) => message).join(" ")}`;
+  const scenarioKeywords = Array.from(new Set((scenarioText.match(/[가-힣]{2,}/g) || []).map((word) => word.slice(0, 4))));
+  const relationshipWords = [
+    "미안",
+    "걱정",
+    "괜찮",
+    "오늘",
+    "다음",
+    "만나",
+    "좋",
+    "고마",
+    "말",
+    "연락",
+    "답장",
+    "집",
+    "도착",
+    "생각",
+    "마음",
+    "얘기"
+  ];
+  const hasSignal =
+    features.hasQuestion ||
+    features.hasApology ||
+    features.hasEmpathy ||
+    features.hasClarity ||
+    features.hasWarmth ||
+    relationshipWords.some((word) => normalized.includes(word)) ||
+    scenarioKeywords.some((word) => normalized.includes(word));
+
+  return normalized.length >= 8 && !hasSignal;
+}
+
 function buildWeaknesses(scores, metrics, totals) {
   const items = [];
 
@@ -415,6 +474,9 @@ function buildWeaknesses(scores, metrics, totals) {
   if (totals.defensive >= 2) {
     items.push("억울함이 먼저 튀어나옵니다. 문제 해결 전에 상대를 피곤하게 만듭니다.");
   }
+  if (totals.offTopic > 0) {
+    items.unshift("대화 맥락에서 벗어난 답장이 있습니다. 상대 입장에선 장난이 아니라 무시로 보입니다.");
+  }
 
   return items.slice(0, 4);
 }
@@ -435,6 +497,9 @@ function buildTips(scores, metrics) {
   if (metrics.averageLength > 100) {
     tips.push("장문이 필요하면 카톡에서 끝내려 하지 말고 통화로 넘기세요.");
   }
+  if (metrics.offTopicRatio > 0) {
+    tips.push("농담을 하더라도 상대가 방금 한 말은 먼저 받아주세요. 맥락을 무시하면 센스가 아니라 회피입니다.");
+  }
 
   return tips.slice(0, 4);
 }
@@ -449,6 +514,7 @@ function pickWorstAnswer(answers) {
       risk += answer.charCount < 16 ? 16 : 0;
       risk += answer.charCount > 135 ? 12 : 0;
       risk += answer.timeToSubmit > 80 ? 10 : 0;
+      risk += answer.isOffTopic ? 28 : 0;
       return { ...answer, risk };
     })
     .sort((a, b) => b.risk - a.risk)[0];
@@ -495,6 +561,9 @@ function buildDirectCallout(result) {
   const scores = result.scores || {};
   const metrics = result.metrics || {};
 
+  if ((metrics.offTopicRatio || 0) > 0) {
+    return "상대가 던진 공을 안 받고 딴소리를 했습니다. 이건 여유가 아니라 대화 이탈입니다.";
+  }
   if ((metrics.averageLength || 0) < 10) {
     return "이 답장 길이면 바쁜 게 아니라 관심 없는 사람처럼 보입니다.";
   }
