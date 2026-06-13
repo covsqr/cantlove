@@ -123,11 +123,20 @@ const resultTypes = [
     match: (scores, metrics) => metrics.questionRatio > 0.65 && scores.warmth < 58
   },
   {
+    id: "solid",
+    title: "답장 기본기 있음형",
+    summary:
+      "크게 사고 치는 답장은 아닙니다. 다만 안전하게만 가는 순간이 있어서, 조금만 더 구체적으로 표현하면 관계가 앞으로 움직입니다.",
+    match: (scores) => scores.empathy >= 60 && scores.clarity >= 60 && scores.warmth >= 65 && scores.pace >= 55
+  },
+  {
     id: "dry",
     title: "읽씹 유발 단답형",
     summary:
       "틀린 말은 아닌데 이어 받을 손잡이가 없습니다. 이 정도로 짧으면 쿨한 게 아니라 그냥 성의 없어 보입니다.",
-    match: (scores, metrics) => metrics.averageLength < 24
+    match: (scores, metrics) =>
+      metrics.averageLength < 14 ||
+      (metrics.averageLength < 24 && scores.warmth < 58 && scores.empathy < 58)
   },
   {
     id: "rush",
@@ -505,7 +514,7 @@ function buildWeaknesses(scores, metrics, totals) {
   if (metrics.averageLength > 105) {
     items.push("해명이 깁니다. 읽는 사람은 진심보다 변명문을 먼저 봅니다.");
   }
-  if (metrics.averageLength < 26) {
+  if (metrics.averageLength < 14 || (metrics.averageLength < 24 && scores.warmth < 58)) {
     items.push("답장이 짧습니다. 이 정도면 관심 없는 척이 아니라 그냥 관심 없어 보입니다.");
   }
   if (totals.defensive >= 2) {
@@ -515,15 +524,25 @@ function buildWeaknesses(scores, metrics, totals) {
     items.unshift("대화 맥락에서 벗어난 답장이 있습니다. 상대 입장에선 장난이 아니라 무시로 보입니다.");
   }
 
+  if (items.length === 0) {
+    items.push("치명적인 문제는 없습니다. 다만 답장이 무난하게 끝나는 편이라, 상대가 설렐 만한 구체성이 조금 부족합니다.");
+  }
+
   return items.slice(0, 4);
 }
 
 function buildTips(scores, metrics) {
-  const tips = [
-    "첫 문장은 '미안', '걱정했겠다', '그렇게 느낄 수 있겠다' 중 하나로 시작하세요.",
-    "상황 설명은 한 문장만 쓰세요. 길어지는 순간 변명처럼 보입니다.",
-    "끝에는 상대가 바로 이어 말할 수 있는 질문을 하나 남기세요."
-  ];
+  const tips = [];
+
+  if (scores.empathy < 60) {
+    tips.push("첫 문장은 내 입장보다 상대 감정을 먼저 받아주세요. 그래야 뒤의 설명도 변명처럼 안 들립니다.");
+  }
+  if (scores.clarity < 60) {
+    tips.push("상황 설명은 짧아도 구체적으로 하세요. 애매하면 상대가 빈칸을 의심으로 채웁니다.");
+  }
+  if (metrics.questionRatio < 0.35) {
+    tips.push("답장 끝에는 상대가 바로 이어 말할 수 있는 질문을 하나 남기세요.");
+  }
 
   if (scores.warmth < 60) {
     tips.push("좋았다, 고맙다, 보고 싶다 같은 말을 아끼지 마세요. 안 하면 없는 줄 압니다.");
@@ -537,24 +556,39 @@ function buildTips(scores, metrics) {
   if (metrics.offTopicRatio > 0) {
     tips.push("농담을 하더라도 상대가 방금 한 말은 먼저 받아주세요. 맥락을 무시하면 센스가 아니라 회피입니다.");
   }
+  if (tips.length === 0) {
+    tips.push("지금처럼 대화는 이어가되, 다음 약속이나 감정을 한 문장 더 구체적으로 붙이면 훨씬 좋습니다.");
+    tips.push("질문만 던지기보다 내 감상도 같이 주세요. 상대는 정보보다 온도를 기억합니다.");
+    tips.push("잘한 답장은 그대로 두고, 애매한 상황에서만 사과와 설명의 순서를 더 신경 쓰면 됩니다.");
+  }
 
   return tips.slice(0, 4);
 }
 
 function pickWorstAnswer(answers) {
-  return answers
+  const ranked = answers
     .map((answer) => {
       const features = getTextFeatures(normalize(answer.text));
       let risk = 0;
       risk += features.hasDefense ? 22 : 0;
-      risk += features.hasEmpathy ? -10 : 12;
-      risk += answer.charCount < 16 ? 16 : 0;
+      risk += features.hasEmpathy || features.hasWarmth || features.hasQuestion ? -8 : 12;
+      risk += answer.charCount < 12 ? 14 : 0;
       risk += answer.charCount > 135 ? 12 : 0;
       risk += answer.timeToSubmit > 80 ? 10 : 0;
       risk += answer.isOffTopic ? 28 : 0;
       return { ...answer, risk };
     })
-    .sort((a, b) => b.risk - a.risk)[0];
+    .sort((a, b) => b.risk - a.risk);
+  const worst = ranked[0];
+
+  if (!worst || worst.risk < 18) {
+    return {
+      text: "크게 위험한 답장은 없었습니다. 전체적으로 대화를 이어가려는 의도는 잘 보입니다.",
+      risk: 0
+    };
+  }
+
+  return worst;
 }
 
 function mergeAiResult(localResult, data) {
@@ -603,6 +637,9 @@ function buildDirectCallout(result) {
   }
   if ((metrics.averageLength || 0) < 10) {
     return "이 답장 길이면 바쁜 게 아니라 관심 없는 사람처럼 보입니다.";
+  }
+  if ((result.overall || 0) >= 70) {
+    return "전체적으로 답장은 괜찮습니다. 문제는 못하는 게 아니라, 가끔 너무 안전하게만 간다는 쪽입니다.";
   }
   if ((metrics.averageLength || 0) > 110) {
     return "지금 필요한 건 장문 해명이 아니라, 사과 한 줄과 다음 행동입니다.";
