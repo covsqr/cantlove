@@ -69,6 +69,34 @@ const scenarios = [
       ["그냥 갑자기 생각나서", "00:15"]
     ],
     placeholder: "전 애인에게 뭐라고 답장할 건가요?"
+  },
+  {
+    id: "read-receipt-pressure",
+    category: "썸",
+    title: "읽고 답이 늦은 사람",
+    description:
+      "썸 상대가 당신의 메시지를 읽고 3시간 뒤에 답장을 보냈습니다. 기분이 살짝 상했지만, 대화를 망치고 싶지는 않습니다.",
+    name: "썸 상대",
+    messages: [
+      ["아 미안 이제 봤어 ㅠ", "18:47"],
+      ["오늘 정신이 좀 없었다", "18:48"],
+      ["뭐하고 있어?", "18:48"]
+    ],
+    placeholder: "서운함을 티 낼지 말지 고민되는 상황입니다. 뭐라고 답장할까요?"
+  },
+  {
+    id: "anniversary-miss",
+    category: "애인",
+    title: "기념일을 놓친 밤",
+    description:
+      "바쁜 하루를 보내다 애인과의 작은 기념일을 깜빡했습니다. 밤이 되어서야 애인이 보낸 카톡을 확인했습니다.",
+    name: "애인",
+    messages: [
+      ["오늘 무슨 날인지 까먹은 거 아니지?", "21:11"],
+      ["아니면 일부러 모른 척 하는 거야?", "21:13"],
+      ["좀 서운하다", "21:28"]
+    ],
+    placeholder: "애인에게 지금 뭐라고 답장할 건가요?"
   }
 ];
 
@@ -145,8 +173,17 @@ function startTest() {
   state.step = 0;
   state.answers = [];
   state.result = null;
+  clearSharedResultHash();
   renderScenario();
   setScreen("test");
+}
+
+function goHome() {
+  state.step = 0;
+  state.answers = [];
+  state.result = null;
+  clearSharedResultHash();
+  setScreen("intro");
 }
 
 function renderScenario() {
@@ -594,6 +631,14 @@ function saveResult(result) {
   window.history.replaceState({}, "", url.toString());
 }
 
+function clearSharedResultHash() {
+  if (!window.location.hash) return;
+
+  const url = new URL(window.location.href);
+  url.hash = "";
+  window.history.replaceState({}, "", url.toString());
+}
+
 function loadSharedResult() {
   const match = window.location.hash.match(/result=([^&]+)/);
   if (!match) return false;
@@ -654,8 +699,8 @@ function escapeHtml(value) {
 }
 
 $("#startBtn").addEventListener("click", startTest);
-$("#restartBtn").addEventListener("click", startTest);
-$("#retryBtn").addEventListener("click", startTest);
+$("#restartBtn").addEventListener("click", goHome);
+$("#retryBtn").addEventListener("click", goHome);
 $("#shareBtn").addEventListener("click", copyShareLink);
 replyInput.addEventListener("input", handleInput);
 replyForm.addEventListener("submit", submitAnswer);

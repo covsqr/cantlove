@@ -182,8 +182,8 @@ p {
 
 h1 {
   margin-bottom: 18px;
-  font-size: clamp(42px, 12vw, 64px);
-  line-height: 0.98;
+  font-size: clamp(52px, 15vw, 82px);
+  line-height: 0.92;
   letter-spacing: 0;
 }
 
@@ -253,6 +253,13 @@ h1 {
   box-shadow: 5px 5px 0 var(--ink);
   font-size: 18px;
   font-weight: 900;
+}
+
+.intro-cta {
+  width: min(100%, 360px);
+  align-self: center;
+  min-height: 58px;
+  font-size: 20px;
 }
 
 .primary-btn:active,
