@@ -1,0 +1,9 @@
+{
+  "name": "cantlove",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "vercel dev",
+    "check": "node --check app.js && node --check api/analyze.js"
+  }
+}

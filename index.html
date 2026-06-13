@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="카톡 답장으로 알아보는 당신이 연애를 못하는 이유, 연못."
+    />
+    <meta property="og:title" content="연못 - 연애를 못하는 이유" />
+    <meta
+      property="og:description"
+      content="주어진 카톡 상황에 직접 답장하고 연애 커뮤니케이션 진단을 받아보세요."
+    />
+    <meta property="og:type" content="website" />
+    <title>연못 - 연애를 못하는 이유</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/quiple/galmuri/dist/galmuri.css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="pond-bg" aria-hidden="true">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <main class="app" id="app">
+      <section class="screen intro-screen is-active" data-screen="intro">
+        <div class="brand-row">
+          <span class="brand-mark">연못</span>
+          <span class="brand-tag">연애를 못하는 이유</span>
+        </div>
+
+        <div class="intro-copy">
+          <p class="kicker">Kakao reply practical exam</p>
+          <h1>당신의 연애는<br />어디서 가라앉고 있을까?</h1>
+          <p>
+            주어진 카톡 상황에 직접 답장하세요. 답장 내용, 걸린 시간,
+            망설임을 보고 연애 커뮤니케이션의 침전물을 분석합니다.
+          </p>
+        </div>
+
+        <div class="exam-ticket">
+          <div>
+            <strong>실기 평가</strong>
+            <span>5문항 · 자유 입력 · 약 3분</span>
+          </div>
+          <div class="stamp">NO CHOICE</div>
+        </div>
+
+        <button class="primary-btn" id="startBtn" type="button">
+          테스트 시작
+        </button>
+      </section>
+
+      <section class="screen test-screen" data-screen="test">
+        <header class="test-header">
+          <button class="ghost-btn" id="restartBtn" type="button">처음</button>
+          <div>
+            <span id="stepLabel">1 / 5</span>
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </header>
+
+        <article class="scenario-card">
+          <div class="scenario-meta">
+            <span id="scenarioCategory">연애</span>
+            <strong id="scenarioTitle">1시간 늦은 답장</strong>
+          </div>
+          <p id="scenarioDescription"></p>
+        </article>
+
+        <section class="phone" aria-label="카톡 대화창">
+          <div class="phone-top">
+            <span id="chatName">애인</span>
+            <span class="status-dot"></span>
+          </div>
+          <div class="chat-log" id="chatLog"></div>
+          <form class="reply-box" id="replyForm">
+            <textarea
+              id="replyInput"
+              rows="4"
+              maxlength="420"
+              placeholder="지금 뭐라고 답장할 건가요?"
+              autocomplete="off"
+            ></textarea>
+            <div class="reply-actions">
+              <span id="typingMeta">입력 대기 중</span>
+              <button class="send-btn" type="submit">전송</button>
+            </div>
+          </form>
+        </section>
+      </section>
+
+      <section class="screen loading-screen" data-screen="loading">
+        <div class="loading-card">
+          <div class="ripple-loader"></div>
+          <h2>대화 습관 침전물 분석 중</h2>
+          <p id="loadingText">답장 속도와 말투를 건져 올리는 중...</p>
+        </div>
+      </section>
+
+      <section class="screen result-screen" data-screen="result">
+        <div class="result-paper" id="resultPaper">
+          <div class="result-topline">
+            <span>YEONMOT REPORT</span>
+            <strong id="resultScore">72점</strong>
+          </div>
+          <h2 id="resultTitle">안전빵 노잼형</h2>
+          <p id="resultSummary"></p>
+
+          <div class="score-grid">
+            <div>
+              <span>공감</span>
+              <strong id="empathyScore">0</strong>
+            </div>
+            <div>
+              <span>명확함</span>
+              <strong id="clarityScore">0</strong>
+            </div>
+            <div>
+              <span>온도</span>
+              <strong id="warmthScore">0</strong>
+            </div>
+            <div>
+              <span>여유</span>
+              <strong id="paceScore">0</strong>
+            </div>
+          </div>
+
+          <section class="result-section">
+            <h3>연못에 빠진 이유</h3>
+            <ul id="weaknessList"></ul>
+          </section>
+
+          <section class="result-section">
+            <h3>가장 위험했던 답장</h3>
+            <blockquote id="worstAnswer"></blockquote>
+          </section>
+
+          <section class="result-section">
+            <h3>다음 답장은 이렇게</h3>
+            <ul id="tipList"></ul>
+          </section>
+        </div>
+
+        <div class="result-actions">
+          <button class="primary-btn" id="shareBtn" type="button">
+            결과 링크 복사
+          </button>
+          <button class="ghost-btn" id="retryBtn" type="button">
+            다시 테스트
+          </button>
+        </div>
+        <p class="share-note" id="shareNote">
+          친구가 링크를 열면 같은 결과지를 볼 수 있습니다.
+        </p>
+      </section>
+    </main>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
