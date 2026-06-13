@@ -77,42 +77,42 @@ const resultTypes = [
     id: "defensive",
     title: "방어형 물수제비",
     summary:
-      "마음은 있는데 첫 반응이 방어부터 나옵니다. 상대는 대화를 하고 싶은데, 당신의 답장은 자꾸 책임 소재 재판으로 흘러갑니다.",
+      "마음은 있는데 첫 반응이 방어부터 나옵니다. 상대가 원하는 건 대화인데, 당신 답장은 자꾸 '내가 뭘 잘못했는데?'로 들립니다.",
     match: (scores) => scores.empathy < 50 && scores.clarity >= 45
   },
   {
     id: "essay",
     title: "해명 과다 장문형",
     summary:
-      "진심을 설명하려다 설명서가 됩니다. 상대가 듣고 싶은 건 긴 사건 경위보다 감정 인정과 다음 행동일 때가 많습니다.",
+      "진심을 설명하려다 설명서가 됩니다. 길게 쓰는 동안 상대는 이해보다 피로를 먼저 느낍니다.",
     match: (scores, metrics) => metrics.averageLength > 95 || metrics.averageTime > 65
   },
   {
     id: "interviewer",
     title: "연애 면접관형",
     summary:
-      "질문은 던지지만 온도가 부족합니다. 대화는 이어지는데 이상하게 설렘보다 평가받는 기분이 먼저 남습니다.",
+      "질문은 던지지만 온도가 부족합니다. 대화는 이어지는데, 상대 입장에서는 썸이 아니라 면접 보는 기분입니다.",
     match: (scores, metrics) => metrics.questionRatio > 0.65 && scores.warmth < 58
   },
   {
     id: "dry",
     title: "읽씹 유발 단답형",
     summary:
-      "틀린 말은 아닌데 이어 받을 손잡이가 없습니다. 짧고 안전한 답장이 반복되면 상대는 관심이 없다고 느끼기 쉽습니다.",
+      "틀린 말은 아닌데 이어 받을 손잡이가 없습니다. 이 정도로 짧으면 쿨한 게 아니라 그냥 성의 없어 보입니다.",
     match: (scores, metrics) => metrics.averageLength < 24
   },
   {
     id: "rush",
     title: "급발진 온수형",
     summary:
-      "감정 표현이 빠르고 진합니다. 좋은 마음도 상대의 속도보다 앞서가면 부담으로 읽힐 수 있습니다.",
+      "감정 표현이 빠르고 진합니다. 좋은 마음이어도 상대 속도보다 앞서가면 설렘이 아니라 부담입니다.",
     match: (scores) => scores.warmth > 78 && scores.pace < 55
   },
   {
     id: "safe",
     title: "안전빵 노잼형",
     summary:
-      "크게 잘못하진 않지만 기억에 남는 온도가 약합니다. 무난함 뒤에 숨으면 관계도 무난하게 식습니다.",
+      "크게 잘못하진 않지만 기억에 남는 온도가 약합니다. 무난함 뒤에 숨으면 관계도 조용히 식습니다.",
     match: () => true
   }
 ];
@@ -123,6 +123,7 @@ const state = {
   startedAt: 0,
   firstTypedAt: 0,
   editCount: 0,
+  isDeletingGroup: false,
   previousLength: 0,
   result: null
 };
@@ -161,18 +162,32 @@ function renderScenario() {
   state.startedAt = performance.now();
   state.firstTypedAt = 0;
   state.editCount = 0;
+  state.isDeletingGroup = false;
   state.previousLength = 0;
 
-  $("#chatLog").innerHTML = scenario.messages
-    .map(
-      ([text, time]) => `
-        <div class="message-row">
-          <div class="bubble">${escapeHtml(text)}</div>
-          <span class="time">${time}</span>
+  const latest = scenario.messages[scenario.messages.length - 1];
+  const previewText = scenario.messages.map(([text]) => text).join("\n");
+  $("#chatLog").innerHTML = `
+    <div class="kakao-shot">
+      <div class="shot-status">
+        <span>KakaoTalk</span>
+        <span>${formatKakaoTime(latest[1])}</span>
+      </div>
+      <div class="chat-preview">
+        <div class="preview-avatar" aria-hidden="true">
+          <span>${escapeHtml(scenario.name.slice(0, 1))}</span>
         </div>
-      `
-    )
-    .join("");
+        <div class="preview-main">
+          <div class="preview-head">
+            <strong>${escapeHtml(scenario.name)}</strong>
+            <span>${formatKakaoTime(latest[1])}</span>
+          </div>
+          <p>${escapeHtml(previewText)}</p>
+        </div>
+        <span class="unread-badge">${scenario.messages.length}</span>
+      </div>
+    </div>
+  `;
 
   requestAnimationFrame(() => replyInput.focus());
 }
@@ -188,8 +203,14 @@ function handleInput() {
     state.firstTypedAt = performance.now();
   }
 
-  if (replyInput.value.length < state.previousLength) {
+  if (replyInput.value.length < state.previousLength && !state.isDeletingGroup) {
     state.editCount += 1;
+  }
+
+  if (replyInput.value.length < state.previousLength) {
+    state.isDeletingGroup = true;
+  } else if (replyInput.value.length > state.previousLength) {
+    state.isDeletingGroup = false;
   }
 
   state.previousLength = replyInput.value.length;
@@ -320,6 +341,7 @@ function analyzeAnswers(answers) {
     overall,
     weaknesses,
     tips,
+    directCallout: buildDirectCallout({ scores, overall, metrics }),
     worstAnswer: worst.text,
     metrics,
     createdAt: new Date().toISOString()
@@ -342,25 +364,25 @@ function buildWeaknesses(scores, metrics, totals) {
   const items = [];
 
   if (scores.empathy < 58) {
-    items.push("상대 감정을 먼저 받아주는 문장이 부족합니다.");
+    items.push("첫 문장에 상대 기분이 없어서, 상대 입장에선 '내가 예민한 사람인가?'만 남습니다.");
   }
   if (scores.clarity < 58) {
-    items.push("상황 설명이 흐릿해서 상대가 혼자 추측하게 됩니다.");
+    items.push("상황 설명이 흐릿합니다. 이렇게 보내면 상대는 답장보다 의심할 거리를 더 많이 받습니다.");
   }
   if (scores.warmth < 58) {
-    items.push("대화는 이어지지만 호감의 온도가 잘 전달되지 않습니다.");
+    items.push("호감 표현이 약합니다. 무난한데, 설레지는 않습니다.");
   }
   if (scores.pace < 58) {
-    items.push("답장을 오래 검열하는 편이라 자연스러운 리듬이 깨질 수 있습니다.");
+    items.push("답장을 너무 오래 만집니다. 신중함보다 눈치 보는 느낌이 먼저 납니다.");
   }
   if (metrics.averageLength > 105) {
-    items.push("한 번에 너무 많이 설명해서 핵심 감정이 묻힙니다.");
+    items.push("해명이 깁니다. 읽는 사람은 진심보다 변명문을 먼저 봅니다.");
   }
   if (metrics.averageLength < 26) {
-    items.push("답장이 짧아 상대가 대화를 이어 받을 실마리가 적습니다.");
+    items.push("답장이 짧습니다. 이 정도면 관심 없는 척이 아니라 그냥 관심 없어 보입니다.");
   }
   if (totals.defensive >= 2) {
-    items.push("문제를 해결하기 전에 억울함부터 전달되는 순간이 있습니다.");
+    items.push("억울함이 먼저 튀어나옵니다. 문제 해결 전에 상대를 피곤하게 만듭니다.");
   }
 
   return items.slice(0, 4);
@@ -368,19 +390,19 @@ function buildWeaknesses(scores, metrics, totals) {
 
 function buildTips(scores, metrics) {
   const tips = [
-    "첫 문장은 해명보다 상대 감정 인정으로 시작하세요.",
-    "상황 설명은 한 문장으로 줄이고, 다음 행동을 분명히 말하세요.",
-    "답장 끝에는 상대가 이어 말할 수 있는 작은 질문을 남기세요."
+    "첫 문장은 '미안', '걱정했겠다', '그렇게 느낄 수 있겠다' 중 하나로 시작하세요.",
+    "상황 설명은 한 문장만 쓰세요. 길어지는 순간 변명처럼 보입니다.",
+    "끝에는 상대가 바로 이어 말할 수 있는 질문을 하나 남기세요."
   ];
 
   if (scores.warmth < 60) {
-    tips.push("좋았다, 고맙다, 보고 싶다처럼 관계 온도를 올리는 표현을 피하지 마세요.");
+    tips.push("좋았다, 고맙다, 보고 싶다 같은 말을 아끼지 마세요. 안 하면 없는 줄 압니다.");
   }
   if (metrics.averageTime > 60) {
-    tips.push("완벽한 답장보다 30초 안에 보내는 정직한 답장이 더 나을 때가 많습니다.");
+    tips.push("완벽한 답장보다 30초 안에 보내는 덜 멋진 답장이 더 낫습니다.");
   }
   if (metrics.averageLength > 100) {
-    tips.push("장문이 필요할수록 카톡에서는 요약하고, 긴 이야기는 통화나 만남으로 넘기세요.");
+    tips.push("장문이 필요하면 카톡에서 끝내려 하지 말고 통화로 넘기세요.");
   }
 
   return tips.slice(0, 4);
@@ -419,6 +441,7 @@ function renderResult(result) {
   $("#resultScore").textContent = `${result.overall}점`;
   $("#resultTitle").textContent = result.title;
   $("#resultSummary").textContent = result.summary;
+  $("#directCallout").textContent = result.directCallout || buildDirectCallout(result);
   $("#empathyScore").textContent = Math.round(result.scores.empathy);
   $("#clarityScore").textContent = Math.round(result.scores.clarity);
   $("#warmthScore").textContent = Math.round(result.scores.warmth);
@@ -427,6 +450,40 @@ function renderResult(result) {
   $("#tipList").innerHTML = result.tips.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   $("#worstAnswer").textContent = result.worstAnswer;
   $("#shareNote").textContent = "친구가 링크를 열면 같은 결과지를 볼 수 있습니다.";
+}
+
+function formatKakaoTime(value) {
+  const [hourText, minuteText] = value.split(":");
+  const hour = Number(hourText);
+  const period = hour < 12 ? "오전" : "오후";
+  const displayHour = hour % 12 || 12;
+  return `${period} ${displayHour}:${minuteText}`;
+}
+
+function buildDirectCallout(result) {
+  const scores = result.scores || {};
+  const metrics = result.metrics || {};
+
+  if ((metrics.averageLength || 0) < 10) {
+    return "이 답장 길이면 바쁜 게 아니라 관심 없는 사람처럼 보입니다.";
+  }
+  if ((metrics.averageLength || 0) > 110) {
+    return "지금 필요한 건 장문 해명이 아니라, 사과 한 줄과 다음 행동입니다.";
+  }
+  if ((scores.empathy || 0) < 50) {
+    return "상대 기분을 안 받고 내 입장부터 말해서 대화가 바로 식습니다.";
+  }
+  if ((scores.clarity || 0) < 50) {
+    return "말이 애매해서 상대가 안심하는 대신 더 추측하게 됩니다.";
+  }
+  if ((scores.warmth || 0) < 50) {
+    return "예의는 있는데 호감이 없습니다. 받는 사람은 그 차이를 바로 느낍니다.";
+  }
+  if ((scores.pace || 0) < 55) {
+    return "너무 오래 고른 답장은 자연스러움보다 계산한 티가 납니다.";
+  }
+
+  return "큰 사고는 안 치지만, 안전하게만 가서 관계가 앞으로 잘 안 움직입니다.";
 }
 
 function saveResult(result) {
