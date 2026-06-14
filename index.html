@@ -106,8 +106,12 @@
         </div>
       </section>
 
-      <section class="screen result-screen" data-screen="result">
-        <section class="survey-card" aria-labelledby="surveyTitle">
+      <div class="survey-modal" id="surveyModal" aria-hidden="true">
+        <div class="survey-backdrop" aria-hidden="true"></div>
+        <section class="survey-card" aria-labelledby="surveyTitle" role="dialog" aria-modal="true">
+          <button class="survey-close" id="surveyCloseBtn" type="button" aria-label="설문 팝업 닫기">
+            ×
+          </button>
           <div>
             <span>제작자 설문</span>
             <h2 id="surveyTitle">다음 서비스를 만드는 데 30초만 보태주세요</h2>
@@ -125,7 +129,9 @@
             설문 참여하기 &gt;&gt;
           </a>
         </section>
+      </div>
 
+      <section class="screen result-screen" data-screen="result">
         <div class="result-paper" id="resultPaper">
           <div class="result-topline">
             <span>YEONMOT REPORT</span>

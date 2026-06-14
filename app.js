@@ -207,6 +207,8 @@ const replyForm = $("#replyForm");
 const typingMeta = $("#typingMeta");
 const chatLog = $("#chatLog");
 const surveyLink = $("#surveyLink");
+const surveyModal = $("#surveyModal");
+const surveyCloseBtn = $("#surveyCloseBtn");
 const SURVEY_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfi-Pa_T7cfZEdb1Xq3NM2hLw-wYNBLz9TQTyPYFS5nWtXd9Q/viewform?usp=publish-editor";
 
@@ -217,6 +219,7 @@ function setScreen(name) {
 }
 
 function startTest() {
+  closeSurveyModal();
   state.step = 0;
   state.answers = [];
   state.result = null;
@@ -226,6 +229,7 @@ function startTest() {
 }
 
 function goHome() {
+  closeSurveyModal();
   state.step = 0;
   state.answers = [];
   state.result = null;
@@ -496,6 +500,8 @@ function analyzeAnswers(answers) {
       acc.questions += features.hasQuestion ? 1 : 0;
       acc.apologies += features.hasApology ? 1 : 0;
       acc.empathy += features.hasEmpathy ? 1 : 0;
+      acc.awareness += features.hasAwareness ? 1 : 0;
+      acc.boundary += features.hasBoundary ? 1 : 0;
       acc.clear += features.hasClarity ? 1 : 0;
       acc.warm += features.hasWarmth ? 1 : 0;
       acc.defensive += features.hasDefense ? 1 : 0;
@@ -510,6 +516,8 @@ function analyzeAnswers(answers) {
       questions: 0,
       apologies: 0,
       empathy: 0,
+      awareness: 0,
+      boundary: 0,
       clear: 0,
       warm: 0,
       defensive: 0,
@@ -530,14 +538,21 @@ function analyzeAnswers(answers) {
   };
 
   const scores = {
-    empathy: clamp(42 + totals.empathy * 10 + totals.apologies * 5 - totals.defensive * 10 - totals.offTopic * 8),
+    empathy: clamp(
+      50 +
+        totals.empathy * 6 +
+        totals.awareness * 5 +
+        totals.boundary * 4 +
+        totals.questions * 2 +
+        totals.apologies * 2 -
+        totals.defensive * 4 -
+        totals.offTopic * 10
+    ),
     clarity: clamp(44 + totals.clear * 11 - totals.vague * 9 - totals.offTopic * 12 - (metrics.averageLength > 120 ? 8 : 0)),
     warmth: clamp(40 + totals.warm * 11 + totals.questions * 4 - totals.defensive * 6 - totals.offTopic * 8),
     pace: clamp(76 - Math.max(0, metrics.averageTime - 35) * 0.45 - metrics.averageEdits * 4)
   };
-  const overall = Math.round(
-    scores.empathy * 0.32 + scores.clarity * 0.28 + scores.warmth * 0.25 + scores.pace * 0.15
-  );
+  const overall = calculateOverall(scores);
   const type = resultTypes.find((candidate) => candidate.match(scores, metrics));
   const weaknesses = buildWeaknesses(scores, metrics, totals);
   const tips = buildTips(scores, metrics, totals);
@@ -558,14 +573,19 @@ function analyzeAnswers(answers) {
 }
 
 function getTextFeatures(text) {
+  const hasAwareness = /이해|알겠|그랬구나|그랬겠다|그럴 수|무슨 일|어떤|왜 그런|기분|상황|고생|수고|잘했|축하|놀랐|기다렸|서운|불편|신경/.test(text);
+  const hasBoundary = /나는|내가|내 입장|불편|어려|선은|선 긋|다음부터|원하|좋지만|괜찮지만|다만|그래도|부담|천천히/.test(text);
+
   return {
     hasQuestion: /[?？]|뭐|어때|괜찮|볼래|말해|알려|싶어/.test(text),
     hasApology: /미안|죄송|쏘리|미안해|미안하다/.test(text),
-    hasEmpathy: /걱정|기다렸|속상|서운|놀랐|그럴 수|신경|마음|불편/.test(text),
+    hasEmpathy: hasAwareness || /걱정|속상|마음|괜찮아|괜찮았|괜찮았어|다행|축하|고생/.test(text),
+    hasAwareness,
+    hasBoundary,
     hasClarity: /친구|동창|회사|집|도착|지금|오늘|내일|다음|만나|볼|얘기/.test(text),
     hasWarmth: /좋|재밌|고마|보고|괜찮|다행|편하게|같이|덕분/.test(text),
-    hasDefense: /왜 그래|뭐가|했잖아|아니|그냥|별로|집착|예민|피곤/.test(text),
-    hasVague: /몰라|아무튼|그냥|나중에|ㅇㅇ|응|네$|글쎄/.test(text)
+    hasDefense: /왜 그래|뭐가 문제|뭘 잘못|했잖아|집착|예민|피곤|별것도|오바|과해/.test(text),
+    hasVague: /몰라|아무튼|나중에|ㅇㅇ|응$|네$|글쎄/.test(text)
   };
 }
 
@@ -747,13 +767,12 @@ function mergeAiResult(localResult, data) {
     typeof data.result.overall === "number" &&
     data.result.directCallout
   ) {
+    const scores = mergeScores(localResult.scores, data.result.scores);
     return {
       ...localResult,
       ...data.result,
-      scores: {
-        ...localResult.scores,
-        ...data.result.scores
-      },
+      scores,
+      overall: calculateOverall(scores),
       metrics: localResult.metrics,
       createdAt: localResult.createdAt
     };
@@ -770,6 +789,29 @@ function mergeAiResult(localResult, data) {
   };
 }
 
+function mergeScores(localScores = {}, aiScores = {}) {
+  return ["empathy", "clarity", "warmth", "pace"].reduce((scores, key) => {
+    scores[key] = mergeScoreValue(localScores[key], aiScores[key], key);
+    return scores;
+  }, {});
+}
+
+function mergeScoreValue(localValue = 0, aiValue, key) {
+  if (typeof aiValue !== "number" || Number.isNaN(aiValue)) {
+    return clamp(localValue);
+  }
+
+  const blended = localValue * 0.45 + aiValue * 0.55;
+  const maxDrop = key === "empathy" ? 10 : 16;
+  return clamp(Math.max(blended, localValue - maxDrop));
+}
+
+function calculateOverall(scores) {
+  return Math.round(
+    scores.empathy * 0.32 + scores.clarity * 0.28 + scores.warmth * 0.25 + scores.pace * 0.15
+  );
+}
+
 function renderResult(result) {
   $("#resultScore").textContent = `${result.overall}점`;
   $("#resultTitle").textContent = result.title;
@@ -784,6 +826,17 @@ function renderResult(result) {
   $("#worstAnswer").textContent = result.worstAnswer;
   $("#shareNote").textContent = "친구가 링크를 열면 같은 결과지를 볼 수 있습니다.";
   surveyLink.href = buildSurveyUrl(result);
+  openSurveyModal();
+}
+
+function openSurveyModal() {
+  surveyModal.classList.add("is-open");
+  surveyModal.setAttribute("aria-hidden", "false");
+}
+
+function closeSurveyModal() {
+  surveyModal.classList.remove("is-open");
+  surveyModal.setAttribute("aria-hidden", "true");
 }
 
 function buildSurveyUrl(result) {
@@ -913,6 +966,7 @@ $("#startBtn").addEventListener("click", startTest);
 $("#restartBtn").addEventListener("click", goHome);
 $("#retryBtn").addEventListener("click", goHome);
 $("#shareBtn").addEventListener("click", copyShareLink);
+surveyCloseBtn.addEventListener("click", closeSurveyModal);
 replyInput.addEventListener("input", handleInput);
 replyForm.addEventListener("submit", submitAnswer);
 chatLog.addEventListener("click", (event) => {
@@ -933,6 +987,11 @@ chatLog.addEventListener("click", (event) => {
   }
 });
 window.addEventListener("hashchange", loadSharedResult);
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeSurveyModal();
+  }
+});
 
 if (!loadSharedResult()) {
   setScreen("intro");
