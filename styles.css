@@ -1096,6 +1096,11 @@ blockquote {
   line-height: 1.65;
 }
 
+.survey-card p strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
 .survey-link {
   display: grid;
   place-items: center;
