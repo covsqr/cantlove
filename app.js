@@ -103,18 +103,18 @@ const scenarios = [
     placeholder: "선택한 이유를 한 줄로 적어주세요."
   },
   {
-    id: "rewrite-boundary",
+    id: "rewrite-good-news",
     type: "rewrite",
-    category: "갈등",
-    title: "끌려가는 문장 고치기",
+    category: "호감",
+    title: "좋은 소식 리액션 고치기",
     description:
-      "상대가 갑자기 약속을 바꾸자고 했고, 아래 답장은 너무 맞춰주기만 하는 느낌입니다. 배려는 남기되 내 입장도 보이게 고쳐보세요.",
-    name: "상대",
+      "상대가 기분 좋은 일을 공유했습니다. 아래 답장은 틀린 말은 아니지만 너무 건조하게 들립니다. 상대의 기분을 살려주는 문장으로 고쳐보세요.",
+    name: "썸 상대",
     messages: [
-      ["미안 오늘 좀 늦게 봐도 돼?", "17:18"],
-      ["한 시간 정도만 미루면 안 될까?", "17:19"]
+      ["나 오늘 발표 잘 끝났어", "18:26"],
+      ["생각보다 칭찬도 많이 받았다 ㅎㅎ", "18:27"]
     ],
-    originalText: "응 괜찮아 너 편한 대로 해.",
+    originalText: "오 그렇구나 축하해.",
     placeholder: "이 문장을 더 낫게 고쳐보세요."
   },
   {
@@ -618,6 +618,17 @@ function isOffTopicAnswer(text, scenario) {
     "마음",
     "얘기"
   ];
+  const unrelatedWords = [
+    "주식",
+    "코인",
+    "게임",
+    "유튜브",
+    "축구",
+    "야구",
+    "로또",
+    "과제",
+    "숙제"
+  ];
   const hasSignal =
     features.hasQuestion ||
     features.hasApology ||
@@ -626,8 +637,9 @@ function isOffTopicAnswer(text, scenario) {
     features.hasWarmth ||
     relationshipWords.some((word) => normalized.includes(word)) ||
     scenarioKeywords.some((word) => normalized.includes(word));
+  const hasUnrelatedSignal = unrelatedWords.some((word) => normalized.includes(word));
 
-  return normalized.length >= 8 && !hasSignal;
+  return normalized.length >= 14 && !hasSignal && hasUnrelatedSignal;
 }
 
 function buildWeaknesses(scores, metrics, totals) {
@@ -655,7 +667,7 @@ function buildWeaknesses(scores, metrics, totals) {
     items.push("억울함이 먼저 튀어나옵니다. 문제 해결 전에 상대를 피곤하게 만듭니다.");
   }
   if (totals.offTopic > 0) {
-    items.unshift("대화 맥락에서 벗어난 답장이 있습니다. 상대 입장에선 장난이 아니라 무시로 보입니다.");
+    items.unshift("명백히 대화 주제와 다른 답장이 있습니다. 이런 경우에만 상대는 무시당했다고 느낄 수 있습니다.");
   }
 
   if (items.length === 0) {
@@ -687,7 +699,7 @@ function buildTips(scores, metrics) {
   if (metrics.averageLength > 100) {
     tips.push("장문이 필요하면 카톡에서 끝내려 하지 말고 통화로 넘기세요.");
   }
-  if (metrics.offTopicRatio > 0) {
+  if (metrics.offTopicRatio >= 0.25) {
     tips.push("농담을 하더라도 상대가 방금 한 말은 먼저 받아주세요. 맥락을 무시하면 센스가 아니라 회피입니다.");
   }
   if (tips.length === 0) {
@@ -794,7 +806,7 @@ function buildDirectCallout(result) {
   const scores = result.scores || {};
   const metrics = result.metrics || {};
 
-  if ((metrics.offTopicRatio || 0) > 0) {
+  if ((metrics.offTopicRatio || 0) >= 0.25) {
     return "상대가 던진 공을 안 받고 딴소리를 했습니다. 이건 여유가 아니라 대화 이탈입니다.";
   }
   if ((metrics.averageLength || 0) < 10) {
