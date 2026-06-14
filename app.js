@@ -248,6 +248,9 @@ const replyInput = $("#replyInput");
 const replyForm = $("#replyForm");
 const typingMeta = $("#typingMeta");
 const chatLog = $("#chatLog");
+const surveyLink = $("#surveyLink");
+const SURVEY_URL =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfi-Pa_T7cfZEdb1Xq3NM2hLw-wYNBLz9TQTyPYFS5nWtXd9Q/viewform?usp=publish-editor";
 
 function setScreen(name) {
   screens.forEach((screen) => {
@@ -796,6 +799,15 @@ function renderResult(result) {
   $("#tipList").innerHTML = result.tips.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   $("#worstAnswer").textContent = result.worstAnswer;
   $("#shareNote").textContent = "친구가 링크를 열면 같은 결과지를 볼 수 있습니다.";
+  surveyLink.href = buildSurveyUrl(result);
+}
+
+function buildSurveyUrl(result) {
+  const url = new URL(SURVEY_URL);
+  url.searchParams.set("result_type", result.title || "");
+  url.searchParams.set("result_score", String(result.overall ?? ""));
+  url.searchParams.set("source", "yeonmot_result");
+  return url.toString();
 }
 
 function formatKakaoTime(value) {

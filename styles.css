@@ -927,6 +927,58 @@ blockquote {
   font-size: 12px;
 }
 
+.survey-card {
+  display: grid;
+  gap: 16px;
+  margin-top: 8px;
+  padding: 18px;
+  border: 3px solid var(--ink);
+  border-radius: 20px;
+  background: var(--paper);
+  box-shadow: var(--shadow), 6px 6px 0 rgba(23, 32, 25, 0.95);
+}
+
+.survey-card span {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.survey-card h2 {
+  margin-bottom: 10px;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.survey-card p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.survey-link {
+  display: grid;
+  place-items: center;
+  min-height: 50px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: var(--moss);
+  box-shadow: 4px 4px 0 var(--ink);
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.survey-link:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
 @media (min-width: 760px) {
   .app {
     padding-top: 34px;
