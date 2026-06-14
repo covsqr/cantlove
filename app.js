@@ -206,7 +206,7 @@ const replyInput = $("#replyInput");
 const replyForm = $("#replyForm");
 const typingMeta = $("#typingMeta");
 const chatLog = $("#chatLog");
-const surveyLink = $("#surveyLink");
+const surveyLinks = document.querySelectorAll("[data-survey-link]");
 const surveyModal = $("#surveyModal");
 const surveyCloseBtn = $("#surveyCloseBtn");
 const SURVEY_URL =
@@ -825,7 +825,9 @@ function renderResult(result) {
   $("#tipList").innerHTML = result.tips.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
   $("#worstAnswer").textContent = result.worstAnswer;
   $("#shareNote").textContent = "친구가 링크를 열면 같은 결과지를 볼 수 있습니다.";
-  surveyLink.href = buildSurveyUrl(result);
+  surveyLinks.forEach((link) => {
+    link.href = buildSurveyUrl(result);
+  });
   openSurveyModal();
 }
 
