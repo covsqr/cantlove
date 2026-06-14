@@ -934,14 +934,16 @@ blockquote {
   padding: 18px;
   border: 3px solid var(--ink);
   border-radius: 20px;
-  background: var(--paper);
+  background:
+    linear-gradient(135deg, rgba(200, 235, 90, 0.92), rgba(239, 255, 207, 0.96) 58%, rgba(255, 244, 201, 0.96)),
+    #efffcf;
   box-shadow: var(--shadow), 6px 6px 0 rgba(23, 32, 25, 0.95);
 }
 
 .survey-card span {
   display: inline-block;
   margin-bottom: 8px;
-  color: var(--danger);
+  color: #c94a3e;
   font-size: 12px;
 }
 
@@ -966,7 +968,7 @@ blockquote {
   min-height: 50px;
   border: 3px solid var(--ink);
   border-radius: 14px;
-  background: var(--moss);
+  background: #ffe05a;
   box-shadow: 4px 4px 0 var(--ink);
   color: var(--ink);
   font-size: 16px;

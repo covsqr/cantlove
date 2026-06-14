@@ -454,6 +454,11 @@ async function submitAnswer(event) {
   }
 
   const submittedAt = performance.now();
+  const primaryText = getPrimaryResponseText({
+    type: scenario.type,
+    text,
+    selectedOption: state.selectedOption
+  });
   state.answers.push({
     scenarioId: scenario.id,
     type: scenario.type,
@@ -462,15 +467,19 @@ async function submitAnswer(event) {
     messages: scenario.messages,
     choices: scenario.choices || [],
     text,
+    primaryText,
+    reasonText: scenario.type === "choice_reason" ? text : "",
+    rewrittenText: scenario.type === "rewrite" ? text : "",
     selectedOption: state.selectedOption,
     originalText: scenario.originalText || "",
-    isOffTopic: text ? isOffTopicAnswer(text, scenario) : false,
+    isOffTopic: scenario.type === "choice_reason" ? false : isOffTopicAnswer(text, scenario),
     timeToFirstType: state.firstTypedAt
       ? Math.round((state.firstTypedAt - state.startedAt) / 1000)
       : 0,
     timeToSubmit: Math.round((submittedAt - state.startedAt) / 1000),
     editCount: state.editCount,
-    charCount: text.length
+    charCount: primaryText.length,
+    reasonCharCount: scenario.type === "choice_reason" ? text.length : 0
   });
 
   if (state.step < scenarios.length - 1) {
@@ -515,8 +524,8 @@ async function finishTest() {
 function analyzeAnswers(answers) {
   const totals = answers.reduce(
     (acc, answer) => {
-      const text = normalize(answer.text);
-      const features = getTextFeatures(text);
+      const analysisText = normalize(getAnalysisText(answer));
+      const features = getTextFeatures(analysisText);
       acc.length += answer.charCount;
       acc.time += answer.timeToSubmit;
       acc.edits += answer.editCount;
@@ -594,6 +603,18 @@ function getTextFeatures(text) {
     hasDefense: /왜 그래|뭐가|했잖아|아니|그냥|별로|집착|예민|피곤/.test(text),
     hasVague: /몰라|아무튼|그냥|나중에|ㅇㅇ|응|네$|글쎄/.test(text)
   };
+}
+
+function getPrimaryResponseText(answer) {
+  if (answer.type === "choice_reason") return answer.selectedOption || answer.primaryText || "";
+  return answer.primaryText || answer.text || "";
+}
+
+function getAnalysisText(answer) {
+  if (answer.type === "choice_reason") {
+    return [answer.selectedOption, answer.reasonText || answer.text].filter(Boolean).join(" ");
+  }
+  return getPrimaryResponseText(answer);
 }
 
 function isHardBlockedAnswer(text) {
@@ -717,15 +738,17 @@ function buildTips(scores, metrics) {
 function pickWorstAnswer(answers) {
   const ranked = answers
     .map((answer) => {
-      const features = getTextFeatures(normalize(answer.text));
+      const visibleText = getPrimaryResponseText(answer);
+      const analysisText = getAnalysisText(answer);
+      const features = getTextFeatures(normalize(analysisText));
       let risk = 0;
       risk += features.hasDefense ? 22 : 0;
       risk += features.hasEmpathy || features.hasWarmth || features.hasQuestion ? -8 : 12;
-      risk += answer.charCount < 12 ? 14 : 0;
-      risk += answer.charCount > 135 ? 12 : 0;
+      risk += visibleText.length < 12 ? 14 : 0;
+      risk += visibleText.length > 135 ? 12 : 0;
       risk += answer.timeToSubmit > 80 ? 10 : 0;
       risk += answer.isOffTopic ? 28 : 0;
-      return { ...answer, risk };
+      return { ...answer, text: visibleText, risk };
     })
     .sort((a, b) => b.risk - a.risk);
   const worst = ranked[0];

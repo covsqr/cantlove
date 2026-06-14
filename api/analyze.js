@@ -41,7 +41,7 @@ module.exports = async function handler(request, response) {
             role: "user",
             content: JSON.stringify({
               instruction:
-                "아래 10문항 응답들과 규칙 기반 결과를 바탕으로 최종 결과 JSON을 작성해줘. 자유 답장, 선택+이유, 문장 고치기 응답을 모두 종합해라. 좋은 답변이 많으면 억지로 비난하지 말고 칭찬과 개선점을 섞어라. 점수는 공감/명확함/온도/여유를 0~100 정수로 주고, overall도 0~100 정수로 줘라.",
+                "아래 10문항 응답들과 규칙 기반 결과를 바탕으로 최종 결과 JSON을 작성해줘. 타입별 의미를 반드시 구분해라. free는 text가 사용자가 실제 보낸 답장이다. choice_reason은 selectedOption이 사용자의 선택이고 text/reasonText는 선택 이유이므로, 이유 문장을 '가장 위험했던 답장'으로 인용하지 말고 필요하면 selectedOption만 평가해라. rewrite는 text/rewrittenText가 사용자가 고친 문장이고 originalText는 원래 나쁜 예시이므로 사용자 답장처럼 비난하지 마라. 좋은 답변이 많으면 억지로 비난하지 말고 칭찬과 개선점을 섞어라. 점수는 공감/명확함/온도/여유를 0~100 정수로 주고, overall도 0~100 정수로 줘라.",
               answers,
               localResult
             })
