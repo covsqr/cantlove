@@ -965,10 +965,10 @@ blockquote {
 
 .survey-card--modal {
   isolation: isolate;
-  animation: surveyFlash 1.25s ease-in-out infinite;
+  animation: surveyFlash 1.35s ease-in-out infinite;
   box-shadow:
-    0 0 24px rgba(255, 79, 184, 0.48),
-    0 0 48px rgba(76, 201, 255, 0.32),
+    0 0 18px rgba(255, 79, 184, 0.45),
+    0 0 32px rgba(76, 201, 255, 0.28),
     var(--shadow),
     7px 7px 0 rgba(23, 32, 25, 0.95);
 }
@@ -976,13 +976,13 @@ blockquote {
 .survey-card--modal::before {
   content: "";
   position: absolute;
-  inset: -9px;
+  inset: -8px;
   z-index: -1;
   border-radius: 26px;
-  background: conic-gradient(from 0deg, #ff4fb8, #ffe45e, #69ff9d, #4cc9ff, #a46bff, #ff4fb8);
-  filter: blur(14px);
-  opacity: 0.72;
-  animation: rainbowSpin 2.8s linear infinite;
+  background: linear-gradient(90deg, #ff4fb8, #ffe45e, #69ff9d, #4cc9ff, #a46bff, #ff4fb8);
+  filter: blur(10px);
+  opacity: 0.58;
+  animation: borderGlowPulse 1.15s ease-in-out infinite;
 }
 
 .survey-card--inline {
@@ -1016,7 +1016,8 @@ blockquote {
   color: #fff;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
-  font-size: 50px;
+  z-index: 3;
+  font-size: 92px;
   font-weight: 900;
   line-height: 1;
   text-shadow:
@@ -1028,22 +1029,22 @@ blockquote {
 }
 
 .survey-neon-arrow--left {
-  left: -28px;
-  bottom: 34px;
-  transform: rotate(-8deg);
+  left: -112px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-3deg);
   animation: neonNudgeLeft 0.95s ease-in-out infinite;
 }
 
 .survey-neon-arrow--right {
-  right: -20px;
-  top: 42px;
+  right: -104px;
+  top: 26px;
   color: #efffff;
   text-shadow:
     0 0 4px #fff,
     0 0 10px #4cc9ff,
     0 0 24px #4cc9ff,
     0 0 42px #4cc9ff;
-  transform: rotate(7deg);
+  transform: rotate(4deg);
   animation: neonNudgeRight 1.15s ease-in-out infinite;
 }
 
@@ -1117,38 +1118,44 @@ blockquote {
 @keyframes surveyFlash {
   0%,
   100% {
-    transform: translateY(0) scale(1);
-    filter: saturate(1.05);
+    transform: translateY(0);
+    filter: saturate(1.03);
   }
   50% {
-    transform: translateY(-3px) scale(1.01);
-    filter: saturate(1.34) brightness(1.08);
+    transform: translateY(-2px);
+    filter: saturate(1.16) brightness(1.03);
   }
 }
 
-@keyframes rainbowSpin {
-  to {
-    transform: rotate(360deg);
+@keyframes borderGlowPulse {
+  0%,
+  100% {
+    opacity: 0.46;
+    filter: blur(9px);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(13px);
   }
 }
 
 @keyframes neonNudgeLeft {
   0%,
   100% {
-    transform: translateX(0) rotate(-8deg);
+    transform: translate(0, -50%) rotate(-3deg);
   }
   50% {
-    transform: translateX(-8px) rotate(-8deg);
+    transform: translate(12px, -50%) rotate(-3deg);
   }
 }
 
 @keyframes neonNudgeRight {
   0%,
   100% {
-    transform: translate(0, 0) rotate(7deg);
+    transform: translate(0, 0) rotate(4deg);
   }
   50% {
-    transform: translate(6px, -4px) rotate(7deg);
+    transform: translate(-12px, 2px) rotate(4deg);
   }
 }
 
@@ -1183,5 +1190,36 @@ blockquote {
   .brand-tag {
     max-width: 190px;
     text-align: right;
+  }
+}
+
+@media (max-width: 560px) {
+  .survey-modal {
+    padding: 18px;
+  }
+
+  .survey-neon-arrow {
+    font-size: 64px;
+  }
+
+  .survey-neon-arrow--left {
+    left: -22px;
+    top: auto;
+    bottom: -56px;
+  }
+
+  .survey-neon-arrow--right {
+    right: -14px;
+    top: -58px;
+  }
+
+  @keyframes neonNudgeLeft {
+    0%,
+    100% {
+      transform: translateX(0) rotate(-8deg);
+    }
+    50% {
+      transform: translateX(8px) rotate(-8deg);
+    }
   }
 }
