@@ -16,51 +16,6 @@ const scenarios = [
     placeholder: "애인에게 지금 뭐라고 답장할 건가요?"
   },
   {
-    id: "crush-low-mood",
-    type: "free",
-    category: "썸",
-    title: "나 오늘 좀 별로였어?",
-    description:
-      "썸을 타는 상대와 둘이 밥을 먹고 헤어진 밤입니다. 대화는 나쁘지 않았다고 생각했는데, 상대가 갑자기 조심스럽게 카톡을 보냈습니다.",
-    name: "썸 상대",
-    messages: [
-      ["오늘 조심히 들어갔어?", "22:41"],
-      ["근데 나 오늘 좀 별로였어?", "22:43"],
-      ["뭔가 내가 말이 많았던 것 같아서", "22:44"]
-    ],
-    placeholder: "상대에게 어떤 답장을 보낼 건가요?"
-  },
-  {
-    id: "blind-date-second",
-    type: "free",
-    category: "소개팅",
-    title: "다음 약속의 온도",
-    description:
-      "소개팅이 끝난 뒤 상대가 먼저 연락했습니다. 나쁘진 않았지만 아직 확신은 없습니다. 그래도 대화를 이어갈지, 선을 그을지 결정해야 하는 순간입니다.",
-    name: "소개팅 상대",
-    messages: [
-      ["오늘 잘 들어가셨어요?", "21:18"],
-      ["저는 덕분에 재밌었어요", "21:19"],
-      ["다음에 또 볼래요?", "21:19"]
-    ],
-    placeholder: "소개팅 상대에게 답장해보세요."
-  },
-  {
-    id: "date-silent",
-    type: "free",
-    category: "데이트",
-    title: "갑자기 조용해진 사람",
-    description:
-      "데이트 중 상대가 어느 순간부터 말수가 줄었습니다. 헤어진 뒤 집에 도착하자 상대에게 카톡이 왔고, 대화 분위기를 회복할 기회가 생겼습니다.",
-    name: "상대",
-    messages: [
-      ["나 집 도착했어", "23:07"],
-      ["오늘 네가 한 말 중에", "23:08"],
-      ["좀 신경 쓰이는 게 있었어", "23:08"]
-    ],
-    placeholder: "분위기를 망치지 않으려면 어떻게 답장할까요?"
-  },
-  {
     id: "read-receipt-pressure",
     type: "choice_reason",
     category: "썸",
@@ -82,29 +37,38 @@ const scenarios = [
     placeholder: "왜 그렇게 하려는지 한 줄로 적어주세요."
   },
   {
-    id: "anniversary-miss",
-    type: "choice_reason",
-    category: "애인",
-    title: "기념일을 놓친 밤",
+    id: "rewrite-defensive",
+    type: "rewrite",
+    category: "갈등",
+    title: "방어적인 문장 고치기",
     description:
-      "바쁜 하루를 보내다 애인과의 작은 기념일을 깜빡했습니다. 밤이 되어서야 애인이 보낸 카톡을 확인했습니다.",
-    name: "애인",
+      "상대가 서운함을 말했을 때, 아래 답장은 너무 방어적으로 들릴 수 있습니다. 같은 입장을 지키되 더 나은 문장으로 고쳐보세요.",
+    name: "상대",
     messages: [
-      ["오늘 무슨 날인지 까먹은 거 아니지?", "21:11"],
-      ["아니면 일부러 모른 척 하는 거야?", "21:13"],
-      ["좀 서운하다", "21:28"]
+      ["아까 네 말 좀 상처였어", "23:32"],
+      ["그냥 넘어가려 했는데 계속 생각나", "23:35"]
     ],
-    choices: [
-      "먼저 사과하고 바로 수습 계획을 말한다",
-      "바빴던 이유를 설명한 뒤 사과한다",
-      "서운한 건 이해하지만 몰아붙이는 건 불편하다고 말한다",
-      "장난으로 분위기를 풀어본다"
+    originalText: "아니 그런 뜻 아닌데 왜 그렇게 받아들여?",
+    placeholder: "이 문장을 더 낫게 고쳐보세요."
+  },
+  {
+    id: "crush-low-mood",
+    type: "free",
+    category: "썸",
+    title: "나 오늘 좀 별로였어?",
+    description:
+      "썸을 타는 상대와 둘이 밥을 먹고 헤어진 밤입니다. 대화는 나쁘지 않았다고 생각했는데, 상대가 갑자기 조심스럽게 카톡을 보냈습니다.",
+    name: "썸 상대",
+    messages: [
+      ["오늘 조심히 들어갔어?", "22:41"],
+      ["근데 나 오늘 좀 별로였어?", "22:43"],
+      ["뭔가 내가 말이 많았던 것 같아서", "22:44"]
     ],
-    placeholder: "선택한 이유를 한 줄로 적어주세요."
+    placeholder: "상대에게 어떤 답장을 보낼 건가요?"
   },
   {
     id: "group-date-boundary",
-    type: "priority",
+    type: "choice_reason",
     category: "데이트",
     title: "친구들 앞에서 나온 농담",
     description:
@@ -121,11 +85,41 @@ const scenarios = [
       "친구들 앞이라 참았다고 말한다",
       "다음부터 하지 말아 달라고 선을 긋는다"
     ],
-    placeholder: "선택 이유가 있으면 한 줄로 덧붙여도 됩니다."
+    placeholder: "선택한 이유를 한 줄로 적어주세요."
+  },
+  {
+    id: "rewrite-too-safe",
+    type: "rewrite",
+    category: "썸",
+    title: "무난한 답장 살리기",
+    description:
+      "썸 상대가 다음 만남을 열어둔 상황입니다. 아래 답장은 예의는 있지만 온도가 거의 없습니다. 당신답게 더 낫게 고쳐보세요.",
+    name: "썸 상대",
+    messages: [
+      ["오늘 얘기 재밌었어", "21:42"],
+      ["다음에 시간 되면 또 보자", "21:43"]
+    ],
+    originalText: "네 좋아요 시간 되면 봐요.",
+    placeholder: "이 문장을 더 낫게 고쳐보세요."
+  },
+  {
+    id: "blind-date-second",
+    type: "free",
+    category: "소개팅",
+    title: "다음 약속의 온도",
+    description:
+      "소개팅이 끝난 뒤 상대가 먼저 연락했습니다. 나쁘진 않았지만 아직 확신은 없습니다. 그래도 대화를 이어갈지, 선을 그을지 결정해야 하는 순간입니다.",
+    name: "소개팅 상대",
+    messages: [
+      ["오늘 잘 들어가셨어요?", "21:18"],
+      ["저는 덕분에 재밌었어요", "21:19"],
+      ["다음에 또 볼래요?", "21:19"]
+    ],
+    placeholder: "소개팅 상대에게 답장해보세요."
   },
   {
     id: "ex-check-in",
-    type: "priority",
+    type: "choice_reason",
     category: "전 애인",
     title: "잘 지내?",
     description:
@@ -142,37 +136,37 @@ const scenarios = [
       "안부만 짧게 답하고 끝낸다",
       "다시 만날 여지를 열어둔다"
     ],
-    placeholder: "선택 이유가 있으면 한 줄로 덧붙여도 됩니다."
+    placeholder: "선택한 이유를 한 줄로 적어주세요."
   },
   {
-    id: "rewrite-defensive",
+    id: "rewrite-boundary",
     type: "rewrite",
     category: "갈등",
-    title: "방어적인 문장 고치기",
+    title: "끌려가는 문장 고치기",
     description:
-      "상대가 서운함을 말했을 때, 아래 답장은 너무 방어적으로 들릴 수 있습니다. 같은 입장을 지키되 더 나은 문장으로 고쳐보세요.",
+      "상대가 갑자기 약속을 바꾸자고 했고, 아래 답장은 너무 맞춰주기만 하는 느낌입니다. 배려는 남기되 내 입장도 보이게 고쳐보세요.",
     name: "상대",
     messages: [
-      ["아까 네 말 좀 상처였어", "23:32"],
-      ["그냥 넘어가려 했는데 계속 생각나", "23:35"]
+      ["미안 오늘 좀 늦게 봐도 돼?", "17:18"],
+      ["한 시간 정도만 미루면 안 될까?", "17:19"]
     ],
-    originalText: "아니 그런 뜻 아닌데 왜 그렇게 받아들여?",
+    originalText: "응 괜찮아 너 편한 대로 해.",
     placeholder: "이 문장을 더 낫게 고쳐보세요."
   },
   {
-    id: "rewrite-too-safe",
-    type: "rewrite",
-    category: "썸",
-    title: "무난한 답장 살리기",
+    id: "date-silent",
+    type: "free",
+    category: "데이트",
+    title: "갑자기 조용해진 사람",
     description:
-      "썸 상대가 다음 만남을 열어둔 상황입니다. 아래 답장은 예의는 있지만 온도가 거의 없습니다. 당신답게 더 낫게 고쳐보세요.",
-    name: "썸 상대",
+      "데이트 중 상대가 어느 순간부터 말수가 줄었습니다. 헤어진 뒤 집에 도착하자 상대에게 카톡이 왔고, 대화 분위기를 회복할 기회가 생겼습니다.",
+    name: "상대",
     messages: [
-      ["오늘 얘기 재밌었어", "21:42"],
-      ["다음에 시간 되면 또 보자", "21:43"]
+      ["나 집 도착했어", "23:07"],
+      ["오늘 네가 한 말 중에", "23:08"],
+      ["좀 신경 쓰이는 게 있었어", "23:08"]
     ],
-    originalText: "네 좋아요 시간 되면 봐요.",
-    placeholder: "이 문장을 더 낫게 고쳐보세요."
+    placeholder: "분위기를 망치지 않으려면 어떻게 답장할까요?"
   }
 ];
 
@@ -374,10 +368,6 @@ function renderStructuredScenario(scenario) {
 
   chatLog.innerHTML = `${messages}${choices}${rewrite}`;
 
-  if (scenario.type === "priority") {
-    typingMeta.textContent = "우선순위를 하나 선택하세요. 이유는 선택입니다.";
-  }
-
   requestAnimationFrame(() => {
     if (scenario.type === "rewrite" || scenario.type === "choice_reason") {
       replyInput.focus();
@@ -451,12 +441,7 @@ async function submitAnswer(event) {
     return;
   }
 
-  if (scenario.type === "priority" && !state.selectedOption) {
-    typingMeta.textContent = "우선순위를 하나 선택해주세요.";
-    return;
-  }
-
-  if (scenario.type !== "priority" && text.length < 2) {
+  if (text.length < 2) {
     typingMeta.textContent = "두 글자 이상은 써야 진단할 수 있어요.";
     replyInput.focus();
     return;
