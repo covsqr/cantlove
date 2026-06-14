@@ -14,7 +14,7 @@ module.exports = async function handler(request, response) {
 
   try {
     const body = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
-    const answers = Array.isArray(body?.answers) ? body.answers.slice(0, 7) : [];
+    const answers = Array.isArray(body?.answers) ? body.answers.slice(0, 10) : [];
     const localResult = body?.localResult || {};
 
     if (answers.length === 0) {
@@ -30,7 +30,7 @@ module.exports = async function handler(request, response) {
       body: JSON.stringify({
         model: MODEL,
         temperature: 0.8,
-        max_output_tokens: 900,
+        max_output_tokens: 1400,
         input: [
           {
             role: "system",
@@ -41,7 +41,7 @@ module.exports = async function handler(request, response) {
             role: "user",
             content: JSON.stringify({
               instruction:
-                "아래 답변들과 규칙 기반 결과를 바탕으로 title, summary, weaknesses, tips를 한국어 JSON으로 작성해줘. title은 12자 내외의 결과 타입명, summary는 2문장, weaknesses와 tips는 각각 3~4개 문자열 배열. 좋은 답변이 많으면 억지로 비난하지 말고 칭찬과 개선점을 섞어라.",
+                "아래 10문항 응답들과 규칙 기반 결과를 바탕으로 최종 결과 JSON을 작성해줘. 자유 답장, 선택+이유, 우선순위, 문장 고치기 응답을 모두 종합해라. 좋은 답변이 많으면 억지로 비난하지 말고 칭찬과 개선점을 섞어라. 점수는 공감/명확함/온도/여유를 0~100 정수로 주고, overall도 0~100 정수로 줘라.",
               answers,
               localResult
             })
@@ -69,9 +69,23 @@ module.exports = async function handler(request, response) {
                   minItems: 3,
                   maxItems: 4,
                   items: { type: "string" }
-                }
+                },
+                directCallout: { type: "string" },
+                worstAnswer: { type: "string" },
+                scores: {
+                  type: "object",
+                  additionalProperties: false,
+                  properties: {
+                    empathy: { type: "integer", minimum: 0, maximum: 100 },
+                    clarity: { type: "integer", minimum: 0, maximum: 100 },
+                    warmth: { type: "integer", minimum: 0, maximum: 100 },
+                    pace: { type: "integer", minimum: 0, maximum: 100 }
+                  },
+                  required: ["empathy", "clarity", "warmth", "pace"]
+                },
+                overall: { type: "integer", minimum: 0, maximum: 100 }
               },
-              required: ["title", "summary", "weaknesses", "tips"]
+              required: ["title", "summary", "weaknesses", "tips", "directCallout", "worstAnswer", "scores", "overall"]
             }
           }
         }

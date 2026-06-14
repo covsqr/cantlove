@@ -1,6 +1,7 @@
 const scenarios = [
   {
     id: "late-reply-lover",
+    type: "free",
     category: "애인",
     title: "1시간 늦은 답장",
     description:
@@ -16,6 +17,7 @@ const scenarios = [
   },
   {
     id: "crush-low-mood",
+    type: "free",
     category: "썸",
     title: "나 오늘 좀 별로였어?",
     description:
@@ -30,6 +32,7 @@ const scenarios = [
   },
   {
     id: "blind-date-second",
+    type: "free",
     category: "소개팅",
     title: "다음 약속의 온도",
     description:
@@ -44,6 +47,7 @@ const scenarios = [
   },
   {
     id: "date-silent",
+    type: "free",
     category: "데이트",
     title: "갑자기 조용해진 사람",
     description:
@@ -57,21 +61,8 @@ const scenarios = [
     placeholder: "분위기를 망치지 않으려면 어떻게 답장할까요?"
   },
   {
-    id: "ex-check-in",
-    category: "전 애인",
-    title: "잘 지내?",
-    description:
-      "헤어진 지 4개월 된 전 애인에게 갑자기 연락이 왔습니다. 마음이 완전히 정리됐는지 스스로도 애매하지만, 답장은 해야 할 것 같습니다.",
-    name: "전 애인",
-    messages: [
-      ["오랜만이야", "00:12"],
-      ["잘 지내?", "00:13"],
-      ["그냥 갑자기 생각나서", "00:15"]
-    ],
-    placeholder: "전 애인에게 뭐라고 답장할 건가요?"
-  },
-  {
     id: "read-receipt-pressure",
+    type: "choice_reason",
     category: "썸",
     title: "읽고 답이 늦은 사람",
     description:
@@ -82,10 +73,17 @@ const scenarios = [
       ["오늘 정신이 좀 없었다", "18:48"],
       ["뭐하고 있어?", "18:48"]
     ],
-    placeholder: "서운함을 티 낼지 말지 고민되는 상황입니다. 뭐라고 답장할까요?"
+    choices: [
+      "서운함을 바로 말한다",
+      "가볍게 넘기고 대화를 이어간다",
+      "상대 사정을 먼저 확인한다",
+      "나도 늦게 답장하며 거리를 둔다"
+    ],
+    placeholder: "왜 그렇게 하려는지 한 줄로 적어주세요."
   },
   {
     id: "anniversary-miss",
+    type: "choice_reason",
     category: "애인",
     title: "기념일을 놓친 밤",
     description:
@@ -96,7 +94,85 @@ const scenarios = [
       ["아니면 일부러 모른 척 하는 거야?", "21:13"],
       ["좀 서운하다", "21:28"]
     ],
-    placeholder: "애인에게 지금 뭐라고 답장할 건가요?"
+    choices: [
+      "먼저 사과하고 바로 수습 계획을 말한다",
+      "바빴던 이유를 설명한 뒤 사과한다",
+      "서운한 건 이해하지만 몰아붙이는 건 불편하다고 말한다",
+      "장난으로 분위기를 풀어본다"
+    ],
+    placeholder: "선택한 이유를 한 줄로 적어주세요."
+  },
+  {
+    id: "group-date-boundary",
+    type: "priority",
+    category: "데이트",
+    title: "친구들 앞에서 나온 농담",
+    description:
+      "데이트 중 우연히 만난 친구들 앞에서 상대가 당신을 소재로 농담을 했고, 당신은 그 말이 꽤 불편했습니다. 집에 돌아온 뒤 상대가 카톡을 보냈습니다.",
+    name: "상대",
+    messages: [
+      ["오늘 친구들이랑 갑자기 봐서 웃겼다 ㅋㅋ", "22:06"],
+      ["근데 너 좀 조용해진 것 같던데", "22:07"],
+      ["혹시 기분 나빴어?", "22:07"]
+    ],
+    choices: [
+      "불편했던 농담을 정확히 짚는다",
+      "상대가 민망하지 않게 가볍게 넘긴다",
+      "친구들 앞이라 참았다고 말한다",
+      "다음부터 하지 말아 달라고 선을 긋는다"
+    ],
+    placeholder: "선택 이유가 있으면 한 줄로 덧붙여도 됩니다."
+  },
+  {
+    id: "ex-check-in",
+    type: "priority",
+    category: "전 애인",
+    title: "잘 지내?",
+    description:
+      "헤어진 지 4개월 된 전 애인에게 갑자기 연락이 왔습니다. 마음이 완전히 정리됐는지 스스로도 애매하지만, 답장은 해야 할 것 같습니다.",
+    name: "전 애인",
+    messages: [
+      ["오랜만이야", "00:12"],
+      ["잘 지내?", "00:13"],
+      ["그냥 갑자기 생각나서", "00:15"]
+    ],
+    choices: [
+      "현재 관계의 선을 먼저 정한다",
+      "왜 연락했는지 확인한다",
+      "안부만 짧게 답하고 끝낸다",
+      "다시 만날 여지를 열어둔다"
+    ],
+    placeholder: "선택 이유가 있으면 한 줄로 덧붙여도 됩니다."
+  },
+  {
+    id: "rewrite-defensive",
+    type: "rewrite",
+    category: "갈등",
+    title: "방어적인 문장 고치기",
+    description:
+      "상대가 서운함을 말했을 때, 아래 답장은 너무 방어적으로 들릴 수 있습니다. 같은 입장을 지키되 더 나은 문장으로 고쳐보세요.",
+    name: "상대",
+    messages: [
+      ["아까 네 말 좀 상처였어", "23:32"],
+      ["그냥 넘어가려 했는데 계속 생각나", "23:35"]
+    ],
+    originalText: "아니 그런 뜻 아닌데 왜 그렇게 받아들여?",
+    placeholder: "이 문장을 더 낫게 고쳐보세요."
+  },
+  {
+    id: "rewrite-too-safe",
+    type: "rewrite",
+    category: "썸",
+    title: "무난한 답장 살리기",
+    description:
+      "썸 상대가 다음 만남을 열어둔 상황입니다. 아래 답장은 예의는 있지만 온도가 거의 없습니다. 당신답게 더 낫게 고쳐보세요.",
+    name: "썸 상대",
+    messages: [
+      ["오늘 얘기 재밌었어", "21:42"],
+      ["다음에 시간 되면 또 보자", "21:43"]
+    ],
+    originalText: "네 좋아요 시간 되면 봐요.",
+    placeholder: "이 문장을 더 낫게 고쳐보세요."
   }
 ];
 
@@ -162,6 +238,7 @@ const state = {
   editCount: 0,
   isDeletingGroup: false,
   previousLength: 0,
+  selectedOption: "",
   result: null
 };
 
@@ -212,10 +289,22 @@ function renderScenario() {
   state.editCount = 0;
   state.isDeletingGroup = false;
   state.previousLength = 0;
+  state.selectedOption = "";
 
+  if (scenario.type === "free") {
+    renderPreviewScenario(scenario);
+    return;
+  }
+
+  renderStructuredScenario(scenario);
+}
+
+function renderPreviewScenario(scenario) {
   const latest = scenario.messages[scenario.messages.length - 1];
   const previewText = latest[0];
-  $("#chatLog").innerHTML = `
+  const shouldShowHint = state.step === 0 && localStorage.getItem("yeonmot_preview_hint_seen") !== "1";
+
+  chatLog.innerHTML = `
     <div class="kakao-shot">
       <div class="shot-status">
         <span>KakaoTalk</span>
@@ -235,8 +324,62 @@ function renderScenario() {
         <span class="unread-badge">${scenario.messages.length}</span>
       </button>
     </div>
-    <p class="open-hint">미리보기를 눌러 채팅방을 여세요.</p>
+    ${
+      shouldShowHint
+        ? `<div class="preview-guide" aria-hidden="true"><span>여기를 눌러 채팅방 열기</span></div>`
+        : `<p class="open-hint">미리보기를 눌러 채팅방을 여세요.</p>`
+    }
   `;
+}
+
+function renderStructuredScenario(scenario) {
+  $("#chatName").textContent = scenario.name || "연못";
+  replyForm.classList.remove("is-hidden");
+  replyInput.value = "";
+  state.startedAt = performance.now();
+  typingMeta.textContent = "입력 대기 중";
+
+  const messages = scenario.messages
+    .map(
+      ([text, time]) => `
+        <div class="message-row">
+          <div class="bubble">${escapeHtml(text)}</div>
+          <span class="time">${formatKakaoTime(time)}</span>
+        </div>
+      `
+    )
+    .join("");
+  const choices = Array.isArray(scenario.choices)
+    ? `<div class="choice-list" role="radiogroup" aria-label="선택지">
+        ${scenario.choices
+          .map(
+            (choice, index) => `
+              <button class="choice-option" type="button" data-choice="${escapeHtml(choice)}">
+                <span>${index + 1}</span>${escapeHtml(choice)}
+              </button>
+            `
+          )
+          .join("")}
+      </div>`
+    : "";
+  const rewrite = scenario.type === "rewrite"
+    ? `<div class="rewrite-card">
+        <span>고칠 문장</span>
+        <strong>${escapeHtml(scenario.originalText)}</strong>
+      </div>`
+    : "";
+
+  chatLog.innerHTML = `${messages}${choices}${rewrite}`;
+
+  if (scenario.type === "priority") {
+    typingMeta.textContent = "우선순위를 하나 선택하세요. 이유는 선택입니다.";
+  }
+
+  requestAnimationFrame(() => {
+    if (scenario.type === "rewrite" || scenario.type === "choice_reason") {
+      replyInput.focus();
+    }
+  });
 }
 
 function updateTypingMeta() {
@@ -268,6 +411,7 @@ function handleInput() {
 
 function openChatRoom() {
   const scenario = scenarios[state.step];
+  localStorage.setItem("yeonmot_preview_hint_seen", "1");
   $("#chatName").textContent = scenario.name;
   replyForm.classList.remove("is-hidden");
   replyInput.value = "";
@@ -297,14 +441,25 @@ async function submitAnswer(event) {
   if (!state.startedAt) return;
 
   const text = replyInput.value.trim();
+  const scenario = scenarios[state.step];
 
-  if (text.length < 2) {
+  if (scenario.type === "choice_reason" && !state.selectedOption) {
+    typingMeta.textContent = "선택지를 먼저 골라주세요.";
+    return;
+  }
+
+  if (scenario.type === "priority" && !state.selectedOption) {
+    typingMeta.textContent = "우선순위를 하나 선택해주세요.";
+    return;
+  }
+
+  if (scenario.type !== "priority" && text.length < 2) {
     typingMeta.textContent = "두 글자 이상은 써야 진단할 수 있어요.";
     replyInput.focus();
     return;
   }
 
-  if (isHardBlockedAnswer(text)) {
+  if (text && isHardBlockedAnswer(text)) {
     typingMeta.textContent = "이건 답장이 아니라 회피입니다. 진짜 보낼 말을 써주세요.";
     replyInput.focus();
     return;
@@ -312,10 +467,16 @@ async function submitAnswer(event) {
 
   const submittedAt = performance.now();
   state.answers.push({
-    scenarioId: scenarios[state.step].id,
-    title: scenarios[state.step].title,
+    scenarioId: scenario.id,
+    type: scenario.type,
+    title: scenario.title,
+    description: scenario.description,
+    messages: scenario.messages,
+    choices: scenario.choices || [],
     text,
-    isOffTopic: isOffTopicAnswer(text, scenarios[state.step]),
+    selectedOption: state.selectedOption,
+    originalText: scenario.originalText || "",
+    isOffTopic: text ? isOffTopicAnswer(text, scenario) : false,
     timeToFirstType: state.firstTypedAt
       ? Math.round((state.firstTypedAt - state.startedAt) / 1000)
       : 0,
@@ -594,6 +755,23 @@ function pickWorstAnswer(answers) {
 function mergeAiResult(localResult, data) {
   if (!data || !data.result) return localResult;
 
+  if (
+    data.result.scores &&
+    typeof data.result.overall === "number" &&
+    data.result.directCallout
+  ) {
+    return {
+      ...localResult,
+      ...data.result,
+      scores: {
+        ...localResult.scores,
+        ...data.result.scores
+      },
+      metrics: localResult.metrics,
+      createdAt: localResult.createdAt
+    };
+  }
+
   return {
     ...localResult,
     title: data.result.title || localResult.title,
@@ -744,6 +922,18 @@ replyForm.addEventListener("submit", submitAnswer);
 chatLog.addEventListener("click", (event) => {
   if (event.target.closest("[data-open-chat]")) {
     openChatRoom();
+    return;
+  }
+
+  const choice = event.target.closest("[data-choice]");
+  if (choice) {
+    state.selectedOption = choice.dataset.choice || "";
+    chatLog.querySelectorAll("[data-choice]").forEach((button) => {
+      button.classList.toggle("is-selected", button === choice);
+    });
+    typingMeta.textContent = state.selectedOption
+      ? `선택: ${state.selectedOption}`
+      : "입력 대기 중";
   }
 });
 window.addEventListener("hashchange", loadSharedResult);

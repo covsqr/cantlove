@@ -540,6 +540,45 @@ h1 span {
   text-align: center;
 }
 
+.preview-guide {
+  position: relative;
+  width: max-content;
+  max-width: 92%;
+  margin: 16px auto 0;
+  padding: 10px 12px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: var(--yellow);
+  box-shadow: 4px 4px 0 var(--ink);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 900;
+  animation: hintPulse 1.15s ease-in-out infinite;
+}
+
+.preview-guide::before {
+  content: "";
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border-left: 3px solid var(--ink);
+  border-top: 3px solid var(--ink);
+  background: var(--yellow);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+@keyframes hintPulse {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 .message-row {
   display: flex;
   align-items: flex-end;
@@ -568,6 +607,73 @@ h1 span {
     "Segoe UI", sans-serif;
   font-size: 10px;
   white-space: nowrap;
+}
+
+.choice-list {
+  display: grid;
+  gap: 9px;
+  margin: 14px 0 2px;
+}
+
+.choice-option {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 2px solid rgba(23, 32, 25, 0.24);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.74);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.choice-option span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  font-weight: 800;
+}
+
+.choice-option.is-selected {
+  border-color: var(--ink);
+  background: var(--moss);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.rewrite-card {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 2px dashed rgba(23, 32, 25, 0.38);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.rewrite-card span {
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.rewrite-card strong {
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
 }
 
 .reply-box {
